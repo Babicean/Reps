@@ -8,6 +8,12 @@ When cutting a new version: bump `package.json` and
 `android/app/build.gradle` (`versionCode` always +1), add a section
 here.
 
+## 0.2.1 — code 3 — 2026-07-05
+
+- **All-time counters** at the bottom of the History chart card:
+  workouts, sets, and total kg lifted, forever. The number that only
+  ever goes up.
+
 ## 0.2 — code 2 — 2026-07-05
 
 The workout domain, replacing the calorie scaffolding. Reps is now a

@@ -136,6 +136,23 @@ export default function HistoryScreen({
           })}
           <line className="baseline" x1="0" y1="78.5" x2="320" y2="78.5" />
         </svg>
+        <div className="trend-stats">
+          <div className="tstat">
+            <span className="tstat-v">{formatNumber(sessions.length)}</span>
+            <span className="tstat-l">workouts, all time</span>
+          </div>
+          <div className="tstat">
+            <span className="tstat-v">{formatNumber(sets.length)}</span>
+            <span className="tstat-l">sets</span>
+          </div>
+          <div className="tstat">
+            <span className="tstat-v">
+              {formatNumber(volumeOf(sets))}
+              <span className="u"> kg</span>
+            </span>
+            <span className="tstat-l">lifted</span>
+          </div>
+        </div>
       </div>
 
       <h2 className="section-label">
