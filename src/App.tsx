@@ -1,11 +1,11 @@
 import { useState } from "react";
 import SettingsSheet from "./components/SettingsSheet";
-import { useEntries } from "./hooks/useEntries";
-import TodayScreen from "./components/TodayScreen";
-import MenuScreen from "./components/MenuScreen";
+import { useWorkouts } from "./hooks/useWorkouts";
+import WorkoutScreen from "./components/WorkoutScreen";
+import RoutinesScreen from "./components/RoutinesScreen";
 import HistoryScreen from "./components/HistoryScreen";
 
-type Tab = "today" | "menu" | "history";
+type Tab = "today" | "routines" | "history";
 
 const TABS: { id: Tab; label: string; icon: JSX.Element }[] = [
   {
@@ -25,16 +25,30 @@ const TABS: { id: Tab; label: string; icon: JSX.Element }[] = [
     ),
   },
   {
-    id: "menu",
-    label: "Menu",
+    id: "routines",
+    label: "Routines",
     icon: (
+      // A barbell: two plates each side, bar through the middle.
       <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-        <path
-          d="M5 2v4.5a2 2 0 01-2 2h0a2 2 0 01-2-2V2M3.5 2v13M12.75 10c-1.5 0-2.5-1.8-2.5-4.25S11.35 2 12.75 2 15 3.8 15 5.75 14.25 10 12.75 10zm0 0v5"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
+        <rect x="2" y="5.5" width="2" height="6" rx="0.8" fill="currentColor" />
+        <rect x="13" y="5.5" width="2" height="6" rx="0.8" fill="currentColor" />
+        <rect
+          x="4.6"
+          y="4"
+          width="2"
+          height="9"
+          rx="0.8"
+          fill="currentColor"
         />
+        <rect
+          x="10.4"
+          y="4"
+          width="2"
+          height="9"
+          rx="0.8"
+          fill="currentColor"
+        />
+        <rect x="6.6" y="7.6" width="3.8" height="1.8" rx="0.9" fill="currentColor" />
       </svg>
     ),
   },
@@ -57,35 +71,36 @@ const TABS: { id: Tab; label: string; icon: JSX.Element }[] = [
 export default function App() {
   const [tab, setTab] = useState<Tab>("today");
   const {
-    today,
-    entries,
-    todayEntries,
-    todayTotal,
-    todayProtein,
-    history,
-    quickAdds,
-    menu,
+    finishedSessions,
+    sessions,
+    sets,
+    routines,
+    activeSession,
+    activeSets,
+    activeVolume,
+    suggested,
+    weekCount,
     streak,
+    weeks,
+    startSession,
+    finishSession,
+    discardSession,
+    deleteSession,
+    logSet,
+    deleteSet,
+    restoreSet,
+    addRoutine,
+    updateRoutine,
+    deleteRoutine,
     importBackup,
-    dailyGoal,
-    setDailyGoal,
+    weeklyTarget,
+    setWeeklyTarget,
     theme,
     setTheme,
     accent,
     setAccent,
-    trackProtein,
-    setTrackProtein,
-    proteinTarget,
-    setProteinTarget,
-    addEntry,
-    updateEntry,
-    deleteEntry,
-    restoreEntry,
-    addMenuItem,
-    updateMenuItem,
-    deleteMenuItem,
-    togglePinned,
-  } = useEntries();
+    settings,
+  } = useWorkouts();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [gearSpin, setGearSpin] = useState(false);
@@ -116,47 +131,42 @@ export default function App() {
       </div>
 
       {tab === "today" && (
-        <TodayScreen
-          key={today}
-          today={today}
-          total={todayTotal}
-          protein={todayProtein}
-          trackProtein={trackProtein}
-          proteinTarget={proteinTarget}
+        <WorkoutScreen
+          routines={routines}
+          sessions={sessions}
+          sets={sets}
+          activeSession={activeSession}
+          activeSets={activeSets}
+          activeVolume={activeVolume}
+          suggested={suggested}
+          weekCount={weekCount}
+          weeklyTarget={weeklyTarget}
           streak={streak}
-          entries={todayEntries}
-          quickAdds={quickAdds}
-          menu={menu}
-          dailyGoal={dailyGoal}
-          onSetGoal={setDailyGoal}
-          onAdd={addEntry}
-          onUpdate={updateEntry}
-          onDelete={deleteEntry}
-          onRestore={restoreEntry}
+          onStart={startSession}
+          onFinish={finishSession}
+          onDiscard={discardSession}
+          onLogSet={logSet}
+          onDeleteSet={deleteSet}
+          onRestoreSet={restoreSet}
         />
       )}
-      {tab === "menu" && (
-        <MenuScreen
-          menu={menu}
-          trackProtein={trackProtein}
-          onLog={(item) => addEntry(item.calories, item.name, item.protein)}
-          onAdd={addMenuItem}
-          onUpdate={updateMenuItem}
-          onDelete={deleteMenuItem}
-          onTogglePinned={togglePinned}
+      {tab === "routines" && (
+        <RoutinesScreen
+          routines={routines}
+          onAdd={addRoutine}
+          onUpdate={updateRoutine}
+          onDelete={deleteRoutine}
         />
       )}
       {tab === "history" && (
         <HistoryScreen
-          today={today}
-          history={history}
-          entries={entries}
-          menu={menu}
-          trackProtein={trackProtein}
+          sessions={finishedSessions}
+          sets={sets}
+          routines={routines}
+          weeks={weeks}
+          settings={settings}
           onImport={importBackup}
-          onAddBackdated={(cal, desc, prot, when) =>
-            addEntry(cal, desc, prot, when)
-          }
+          onDeleteSession={deleteSession}
         />
       )}
 
@@ -166,10 +176,8 @@ export default function App() {
         onSetTheme={setTheme}
         accent={accent}
         onSetAccent={setAccent}
-        trackProtein={trackProtein}
-        onSetTrackProtein={setTrackProtein}
-        proteinTarget={proteinTarget}
-        onSetProteinTarget={setProteinTarget}
+        weeklyTarget={weeklyTarget}
+        onSetWeeklyTarget={setWeeklyTarget}
         onClose={() => setSettingsOpen(false)}
       />
 

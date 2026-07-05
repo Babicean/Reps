@@ -59,19 +59,19 @@ scrollbars, safe areas — so those lessons never need relearning.
 
 ## v0.x — the core app (current target)
 
-- [ ] Strip the calorie domain from the fork (entries, menu, goal
+- [x] Strip the calorie domain from the fork (entries, menu, goal
       ring, protein) while keeping the design system and shell.
-- [ ] Data model: exercises, routines, sessions, sets — versioned
+- [x] Data model: exercises, routines, sessions, sets — versioned
       storage + native mirror + backup format, per-set rows.
-- [ ] Routines tab: create/edit/reorder Push, Pull, Legs
+- [x] Routines tab: create/edit/reorder Push, Pull, Legs
       (pre-seeded with the owner's real program).
-- [ ] Today idle state: start-workout hero with next-routine
+- [x] Today idle state: start-workout hero with next-routine
       suggestion and week-at-a-glance.
-- [ ] Live session: volume hero, exercise checklist, set sheet with
+- [x] Live session: volume hero, exercise checklist, set sheet with
       "last time" ghosts + steppers, Finish workout.
-- [ ] History: session list + detail, weekly volume bars, PR badges.
-- [ ] Weekly session target + streak, in Settings.
-- [ ] Backup/restore of everything; settings (theme, accent, account
+- [x] History: session list + detail, weekly volume bars, PR badges.
+- [x] Weekly session target + streak, in Settings.
+- [x] Backup/restore of everything; settings (theme, accent, account
       beta) carried over from Tally.
 
 ## Parked for later (deliberately)

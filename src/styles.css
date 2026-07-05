@@ -2211,3 +2211,304 @@ input {
   }
 
 }
+
+/* ---- Reps: start-a-workout ------------------------------------------------ */
+
+.start-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 1.25rem 1.375rem 1.375rem;
+  text-align: left;
+  transition: transform 140ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.start-card:active {
+  transform: scale(0.985);
+}
+
+.start-kicker {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.start-name {
+  margin-top: 0.25rem;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.start-sub {
+  margin-top: 0.125rem;
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+}
+
+.start-go {
+  align-self: stretch;
+  margin-top: 1.125rem;
+  padding: 0.875rem;
+  border-radius: 0.875rem;
+  background: var(--accent-strong);
+  color: var(--accent-ink);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.start-alts {
+  margin-top: 0.75rem;
+}
+
+.week-card {
+  padding: 1.125rem 1.25rem;
+}
+
+.week-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.week-dot {
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  background: var(--hairline);
+}
+
+.week-dot.done {
+  background: var(--accent);
+}
+
+.week-line {
+  margin-top: 0.625rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+/* ---- Reps: live session ---------------------------------------------------- */
+
+.hero-live {
+  padding-bottom: 1rem;
+}
+
+.ex-tile {
+  font-variant-numeric: tabular-nums;
+}
+
+.ex-tile .ex-count {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.ex-tile.done {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.ex-add .menu-tile {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.finish-wrap {
+  margin-top: 1.25rem;
+}
+
+/* ---- Reps: set logger sheet -------------------------------------------------- */
+
+.last-line {
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+  line-height: 1.5;
+  margin-bottom: 0.875rem;
+}
+
+.last-line strong {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepper-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.625rem;
+}
+
+.stepper-label {
+  flex: none;
+  width: 3.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.stepper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.step-btn {
+  flex: none;
+  width: 2.875rem;
+  height: 2.875rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: transform 120ms ease, filter 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.step-btn:active {
+  transform: scale(0.9);
+}
+
+.step-field {
+  flex: 1;
+}
+
+.step-field input {
+  text-align: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding-right: 3.25rem;
+}
+
+.today-sets {
+  margin-top: 1rem;
+  border-top: 1px solid var(--hairline);
+}
+
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5625rem 0.125rem;
+}
+
+.set-row + .set-row {
+  border-top: 1px solid var(--hairline);
+}
+
+.set-idx {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  color: var(--ink-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.set-text {
+  flex: 1;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.set-del {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ink-3);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.set-del:active {
+  color: var(--danger);
+}
+
+/* ---- Reps: routine editor -------------------------------------------------------- */
+
+.rex-list {
+  margin-top: 0.375rem;
+  border-top: 1px solid var(--hairline);
+}
+
+.rex-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5625rem 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.rex-btn {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  background: var(--bg);
+  font-size: 0.9375rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rex-btn:disabled {
+  opacity: 0.35;
+}
+
+.rex-del {
+  color: var(--danger);
+}
+
+.rex-add {
+  flex: none;
+  width: 2.875rem;
+  height: 2.875rem;
+  border-radius: 0.875rem;
+  display: grid;
+  place-items: center;
+  background: var(--accent-strong);
+  color: var(--accent-ink);
+  font-size: 1.375rem;
+  font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---- Reps: session detail ------------------------------------------------------------ */
+
+.session-groups {
+  margin-top: 0.25rem;
+}
+
+.session-group {
+  padding: 0.625rem 0.125rem;
+}
+
+.session-group + .session-group {
+  border-top: 1px solid var(--hairline);
+}
+
+.session-group .menu-detail {
+  margin-top: 0.125rem;
+}

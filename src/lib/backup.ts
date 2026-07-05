@@ -1,41 +1,41 @@
-import type { Entry, MenuItem } from "../types";
-import { isEntry } from "./store";
-import { isMenuItem } from "./menu";
+import type { Routine, Session, SetEntry } from "../types";
 import type { Settings } from "./settings";
 
 /**
- * Backup = one JSON file holding everything: entries, menu, settings.
- * Import merges by id, so restoring an old backup never duplicates data.
+ * Backup = one JSON file holding everything: sessions, sets, routines,
+ * settings. Import merges by id (union), so restoring on a new phone or
+ * double-importing never duplicates.
  */
-
-export const BACKUP_VERSION = 1;
-
 export interface BackupPayload {
   app: "reps";
   version: number;
-  exportedAt: string;
-  entries: Entry[];
-  menu: MenuItem[];
+  exportedAt: number;
+  sessions: Session[];
+  sets: SetEntry[];
+  routines: Routine[];
   settings: Settings;
 }
 
+const BACKUP_VERSION = 1;
+
 export function buildBackup(
-  entries: Entry[],
-  menu: MenuItem[],
+  sessions: Session[],
+  sets: SetEntry[],
+  routines: Routine[],
   settings: Settings,
-  now: Date = new Date(),
-): BackupPayload {
-  return {
+): string {
+  const payload: BackupPayload = {
     app: "reps",
     version: BACKUP_VERSION,
-    exportedAt: now.toISOString(),
-    entries,
-    menu,
+    exportedAt: Date.now(),
+    sessions,
+    sets,
+    routines,
     settings,
   };
+  return JSON.stringify(payload, null, 2);
 }
 
-/** Suggested filename, e.g. "reps-backup-2026-07-04.json". */
 export function backupFilename(now: Date = new Date()): string {
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, "0");
@@ -43,37 +43,43 @@ export function backupFilename(now: Date = new Date()): string {
   return `reps-backup-${y}-${m}-${d}.json`;
 }
 
-/** Parse and validate a backup file. Returns null for anything unusable. */
-export function parseBackup(json: string): BackupPayload | null {
+/** Parse and sanity-check a backup file; null when it isn't one of ours. */
+export function parseBackup(raw: string): BackupPayload | null {
   try {
-    const raw = JSON.parse(json) as Partial<BackupPayload>;
-    if (!raw || raw.app !== "reps" || !Array.isArray(raw.entries)) {
+    const parsed = JSON.parse(raw) as BackupPayload;
+    if (parsed?.app !== "reps") return null;
+    if (!Array.isArray(parsed.sessions) || !Array.isArray(parsed.sets)) {
       return null;
     }
-    const goal = raw.settings?.dailyGoal;
-    const theme = raw.settings?.theme;
-    const trackProtein = raw.settings?.trackProtein;
-    const proteinTarget = raw.settings?.proteinTarget;
-    const accent = raw.settings?.accent;
+    const weeklyTarget = parsed.settings?.weeklyTarget;
+    const theme = parsed.settings?.theme;
+    const accent = parsed.settings?.accent;
     return {
       app: "reps",
-      version: typeof raw.version === "number" ? raw.version : 1,
-      exportedAt: typeof raw.exportedAt === "string" ? raw.exportedAt : "",
-      entries: raw.entries.filter(isEntry),
-      menu: Array.isArray(raw.menu) ? raw.menu.filter(isMenuItem) : [],
+      version: typeof parsed.version === "number" ? parsed.version : 1,
+      exportedAt:
+        typeof parsed.exportedAt === "number" ? parsed.exportedAt : 0,
+      sessions: parsed.sessions.filter(
+        (s) => s && typeof s.id === "string" && typeof s.day === "string",
+      ),
+      sets: parsed.sets.filter(
+        (s) =>
+          s &&
+          typeof s.id === "string" &&
+          typeof s.exercise === "string" &&
+          typeof s.reps === "number",
+      ),
+      routines: Array.isArray(parsed.routines)
+        ? parsed.routines.filter(
+            (r) => r && typeof r.id === "string" && Array.isArray(r.exercises),
+          )
+        : [],
       settings: {
-        dailyGoal:
-          typeof goal === "number" && Number.isFinite(goal) && goal > 0
-            ? Math.round(goal)
+        weeklyTarget:
+          typeof weeklyTarget === "number" && weeklyTarget > 0
+            ? Math.round(weeklyTarget)
             : null,
         theme: theme === "light" || theme === "dark" ? theme : "system",
-        trackProtein: typeof trackProtein === "boolean" ? trackProtein : false,
-        proteinTarget:
-          typeof proteinTarget === "number" &&
-          Number.isFinite(proteinTarget) &&
-          proteinTarget > 0
-            ? Math.round(proteinTarget)
-            : null,
         accent: accent === "emerald" ? "emerald" : "azure",
       },
     };
@@ -83,31 +89,43 @@ export function parseBackup(json: string): BackupPayload | null {
 }
 
 export interface MergeResult {
-  entries: Entry[];
-  menu: MenuItem[];
-  addedEntries: number;
-  addedItems: number;
+  sessions: Session[];
+  sets: SetEntry[];
+  routines: Routine[];
+  addedSessions: number;
+  addedSets: number;
+  addedRoutines: number;
 }
 
-/**
- * Merge a backup into current data. Union by id — current records always
- * win, imported records only fill gaps. Safe to run repeatedly.
- */
+/** Union by id: existing data always wins, imports only add. */
 export function mergeBackup(
-  currentEntries: Entry[],
-  currentMenu: MenuItem[],
+  sessions: Session[],
+  sets: SetEntry[],
+  routines: Routine[],
   backup: BackupPayload,
 ): MergeResult {
-  const haveEntry = new Set(currentEntries.map((e) => e.id));
-  const newEntries = backup.entries.filter((e) => !haveEntry.has(e.id));
+  const sessionIds = new Set(sessions.map((s) => s.id));
+  const setIds = new Set(sets.map((s) => s.id));
+  const routineIds = new Set(routines.map((r) => r.id));
+  const routineNames = new Set(
+    routines.map((r) => r.name.trim().toLowerCase()),
+  );
 
-  const haveItem = new Set(currentMenu.map((m) => m.id));
-  const newItems = backup.menu.filter((m) => !haveItem.has(m.id));
+  const newSessions = backup.sessions.filter((s) => !sessionIds.has(s.id));
+  const newSets = backup.sets.filter((s) => !setIds.has(s.id));
+  // Routines also dedupe by name so a re-import doesn't duplicate
+  // "Push" with a different id.
+  const newRoutines = backup.routines.filter(
+    (r) =>
+      !routineIds.has(r.id) && !routineNames.has(r.name.trim().toLowerCase()),
+  );
 
   return {
-    entries: [...currentEntries, ...newEntries],
-    menu: [...currentMenu, ...newItems],
-    addedEntries: newEntries.length,
-    addedItems: newItems.length,
+    sessions: [...sessions, ...newSessions],
+    sets: [...sets, ...newSets],
+    routines: [...routines, ...newRoutines],
+    addedSessions: newSessions.length,
+    addedSets: newSets.length,
+    addedRoutines: newRoutines.length,
   };
 }

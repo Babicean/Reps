@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { formatCalories } from "../lib/format";
+import { formatNumber } from "../lib/format";
 
 const DURATION = 480;
 
@@ -44,5 +44,5 @@ export default function AnimatedNumber({ value }: { value: number }) {
     };
   }, [value]);
 
-  return <>{formatCalories(display)}</>;
+  return <>{formatNumber(display)}</>;
 }

@@ -15,8 +15,9 @@ import { Preferences } from "@capacitor/preferences";
  */
 
 export const MIRRORED_KEYS = [
-  "reps.store",
-  "reps.menu",
+  "reps.sessions",
+  "reps.sets",
+  "reps.routines",
   "reps.settings",
   "reps.account",
 ] as const;

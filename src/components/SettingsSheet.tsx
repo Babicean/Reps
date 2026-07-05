@@ -1,7 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import Sheet from "./Sheet";
 import type { AccentPref, ThemePref } from "../lib/theme";
-import { parseProtein } from "../lib/menu";
 import {
   createAccount,
   deleteAccount,
@@ -20,10 +19,8 @@ interface Props {
   onSetTheme: (theme: ThemePref) => void;
   accent: AccentPref;
   onSetAccent: (accent: AccentPref) => void;
-  trackProtein: boolean;
-  onSetTrackProtein: (on: boolean) => void;
-  proteinTarget: number | null;
-  onSetProteinTarget: (grams: number | null) => void;
+  weeklyTarget: number | null;
+  onSetWeeklyTarget: (target: number | null) => void;
   onClose: () => void;
 }
 
@@ -47,10 +44,8 @@ export default function SettingsSheet({
   onSetTheme,
   accent,
   onSetAccent,
-  trackProtein,
-  onSetTrackProtein,
-  proteinTarget,
-  onSetProteinTarget,
+  weeklyTarget,
+  onSetWeeklyTarget,
   onClose,
 }: Props) {
   const [target, setTarget] = useState("");
@@ -70,26 +65,31 @@ export default function SettingsSheet({
 
   useEffect(() => {
     if (open) {
-      setTarget(proteinTarget !== null ? String(proteinTarget) : "");
+      setTarget(weeklyTarget !== null ? String(weeklyTarget) : "");
       setView("settings");
       setAcct(loadAccountState());
       setForm("none");
       setEmail("");
       setPassword("");
       setFormError(null);
+      setSuggestion(null);
       setConfirmDelete(false);
       setBackAnim(false);
     }
-  }, [open, proteinTarget]);
+  }, [open, weeklyTarget]);
 
   const commitTarget = () => {
-    const parsed = parseProtein(target);
-    if (parsed === undefined) {
-      // Invalid input: fall back to what's stored.
-      setTarget(proteinTarget !== null ? String(proteinTarget) : "");
+    const trimmed = target.trim();
+    if (trimmed === "") {
+      onSetWeeklyTarget(null);
       return;
     }
-    onSetProteinTarget(parsed === 0 ? null : parsed);
+    const parsed = Number(trimmed);
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 14) {
+      setTarget(weeklyTarget !== null ? String(weeklyTarget) : "");
+      return;
+    }
+    onSetWeeklyTarget(parsed);
   };
 
   const openForm = (which: AccountForm) => {
@@ -135,8 +135,6 @@ export default function SettingsSheet({
       setFormError(pwProblem);
       return;
     }
-    // Well-formed but suspicious (gmail.con and friends): offer the fix
-    // once instead of silently accepting an address mail can't reach.
     if (form === "create" && !suggestion) {
       const fix = suggestEmailFix(email);
       if (fix) {
@@ -217,16 +215,16 @@ export default function SettingsSheet({
           </div>
           {confirmDelete && (
             <p className="acct-note" role="alert">
-              Deleting removes the account only. Your entries, menu, and
-              settings stay on this phone.
+              Deleting removes the account only. Your workouts, routines,
+              and settings stay on this phone.
             </p>
           )}
         </>
       ) : form === "none" ? (
         <>
           <p className="sheet-sub">
-            Keep your reps safe beyond this phone. One account, your data
-            backed up — syncing arrives with the server update.
+            Keep your training log safe beyond this phone. One account,
+            your data backed up — syncing arrives with the server update.
           </p>
           <div className="sheet-actions">
             {acct.account ? (
@@ -424,45 +422,28 @@ export default function SettingsSheet({
         ))}
       </div>
 
-      <p className="settings-label">Protein</p>
+      <p className="settings-label">Training</p>
       <div className="settings-row">
         <div className="settings-row-text">
-          <span className="settings-row-title">Track protein</span>
+          <span className="settings-row-title">Weekly target</span>
           <span className="settings-row-sub">
-            Adds optional grams to Menu items and entries.
+            Sessions per week. Blank for no target.
           </span>
         </div>
-        <button
-          className={`switch${trackProtein ? " on" : ""}`}
-          role="switch"
-          aria-checked={trackProtein}
-          aria-label="Track protein"
-          onClick={() => onSetTrackProtein(!trackProtein)}
-        >
-          <span className="switch-knob" />
-        </button>
-      </div>
-      {trackProtein && (
-        <div className="settings-row">
-          <div className="settings-row-text">
-            <span className="settings-row-title">Daily protein target</span>
-            <span className="settings-row-sub">Blank for no target.</span>
-          </div>
-          <div className="field field-cal settings-target">
-            <input
-              value={target}
-              onChange={(e) => setTarget(e.target.value)}
-              onBlur={commitTarget}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-              }}
-              inputMode="numeric"
-              aria-label="Daily protein target in grams"
-            />
-            <span className="unit">g</span>
-          </div>
+        <div className="field field-cal settings-target">
+          <input
+            value={target}
+            onChange={(e) => setTarget(e.target.value)}
+            onBlur={commitTarget}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+            }}
+            inputMode="numeric"
+            aria-label="Weekly session target"
+          />
+          <span className="unit">/wk</span>
         </div>
-      )}
+      </div>
 
       <p className="settings-label">Account</p>
       <button

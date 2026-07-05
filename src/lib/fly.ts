@@ -8,7 +8,7 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-export function flyCalories(text: string, fromEl: HTMLElement | null): void {
+export function flyValue(text: string, fromEl: HTMLElement | null): void {
   const target = document.getElementById("hero-total");
   if (!fromEl || !target) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
