@@ -46,7 +46,7 @@ async function syncNativeBars(pref: ThemePref): Promise<void> {
     const dark = effectiveDark(pref);
     await StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light });
     await StatusBar.setBackgroundColor({
-      color: dark ? "#121316" : "#f5f6f8",
+      color: dark ? "#0c0d10" : "#f5f6f8",
     });
   } catch {
     // Web build or plugin unavailable — CSS alone is fine.

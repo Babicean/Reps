@@ -37,52 +37,52 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #121316;
-    --card: #1b1d21;
-    --card-press: #212329;
+    --bg: #0c0d10;
+    --card: #1e2126;
+    --card-press: #262a30;
     --ink: #f4f5f7;
-    --ink-2: #9a9da6;
-    --ink-3: #62656e;
+    --ink-2: #a3a7b0;
+    --ink-3: #757983;
     --accent: #5d8dff;
     --accent-strong: #5d8dff;
     --accent-ink: #0a1226;
     --accent-soft: rgba(93, 141, 255, 0.16);
     --danger: #d8655d;
     --warn: #d9a54a;
-    --hairline: rgba(255, 255, 255, 0.08);
+    --hairline: rgba(255, 255, 255, 0.09);
     --shadow-card:
-      0 1px 2px rgba(0, 0, 0, 0.25),
-      0 8px 28px rgba(0, 0, 0, 0.3);
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 10px 30px rgba(0, 0, 0, 0.5);
     --shadow-float:
-      0 2px 6px rgba(0, 0, 0, 0.35),
-      0 12px 40px rgba(0, 0, 0, 0.5);
-    --blur-bg: rgba(23, 24, 28, 0.72);
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 14px 44px rgba(0, 0, 0, 0.65);
+    --blur-bg: rgba(20, 22, 26, 0.78);
     --focus-ring: rgba(93, 141, 255, 0.45);
   }
 }
 
 /* Manual override from Settings (keep in sync with the block above). */
 :root[data-theme="dark"] {
-    --bg: #121316;
-    --card: #1b1d21;
-    --card-press: #212329;
+    --bg: #0c0d10;
+    --card: #1e2126;
+    --card-press: #262a30;
     --ink: #f4f5f7;
-    --ink-2: #9a9da6;
-    --ink-3: #62656e;
+    --ink-2: #a3a7b0;
+    --ink-3: #757983;
     --accent: #5d8dff;
     --accent-strong: #5d8dff;
     --accent-ink: #0a1226;
     --accent-soft: rgba(93, 141, 255, 0.16);
     --danger: #d8655d;
     --warn: #d9a54a;
-    --hairline: rgba(255, 255, 255, 0.08);
+    --hairline: rgba(255, 255, 255, 0.09);
     --shadow-card:
-      0 1px 2px rgba(0, 0, 0, 0.25),
-      0 8px 28px rgba(0, 0, 0, 0.3);
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 10px 30px rgba(0, 0, 0, 0.5);
     --shadow-float:
-      0 2px 6px rgba(0, 0, 0, 0.35),
-      0 12px 40px rgba(0, 0, 0, 0.5);
-    --blur-bg: rgba(23, 24, 28, 0.72);
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 14px 44px rgba(0, 0, 0, 0.65);
+    --blur-bg: rgba(20, 22, 26, 0.78);
     --focus-ring: rgba(93, 141, 255, 0.45);
 }
 

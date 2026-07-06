@@ -90,6 +90,11 @@ scrollbars, safe areas — so those lessons never need relearning.
 - [x] Trophy case (0.4): History → one quiet row → every exercise's
       all-time best, gold medal on the heaviest, bodyweight work
       ranked by reps. Real logged sets only.
+- [x] "Graphite" dark mode (0.4.2): dark surfaces now separate by
+      color, not invisible shadows — darker page, brighter cards, a
+      1px light catch on top edges, brighter secondary inks. Chosen
+      over a pure-black "Midnight" variant (too harsh); Tally still
+      has the old flat dark and can inherit this.
 
 ## Parked for later (deliberately)
 
