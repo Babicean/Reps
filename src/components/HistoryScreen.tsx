@@ -3,16 +3,20 @@ import type { Routine, Session, SetEntry } from "../types";
 import type { WeekSummary } from "../lib/week";
 import {
   formatDuration,
+  formatKg,
   formatNumber,
   formatSet,
   formatShortDay,
   formatWeekLabel,
 } from "../lib/format";
 import {
+  exerciseTrend,
   groupByExercise,
+  personalRecords,
   setsForSession,
   volumeOf,
 } from "../lib/workout";
+import { trackingDayFor } from "../lib/day";
 import { buildBackup, backupFilename, parseBackup } from "../lib/backup";
 import type { BackupPayload, MergeResult } from "../lib/backup";
 import { shareBackupFile } from "../lib/exportFile";
@@ -31,6 +35,41 @@ interface Props {
   onDeleteSession: (id: string) => void;
 }
 
+/** Where in History we are: the list, the trophy case, or one exercise. */
+type View =
+  | { kind: "main" }
+  | { kind: "trophies" }
+  | { kind: "exercise"; name: string };
+
+const TROPHY_ICON = (
+  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+    <path
+      d="M6.5 3h7v5a3.5 3.5 0 01-7 0V3z"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M6.5 4.5H3.75c.1 2.3 1.3 3.7 3 4M13.5 4.5h2.75c-.1 2.3-1.3 3.7-3 4M10 11.5V15M7.25 16.5h5.5"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+const BACK_ICON = (
+  <svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true">
+    <path
+      d="M8.5 1.5L2 8l6.5 6.5"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 /** Sessions instead of days: every gym visit, structured and instant. */
 export default function HistoryScreen({
   sessions,
@@ -44,7 +83,15 @@ export default function HistoryScreen({
   const { toast, showToast } = useToast();
   const [openSession, setOpenSession] = useState<Session | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [view, setView] = useState<View>({ kind: "main" });
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const go = (next: View) => {
+    setView(next);
+    window.scrollTo({ top: 0 });
+  };
+
+  const records = useMemo(() => personalRecords(sets), [sets]);
 
   const maxVolume = Math.max(1, ...weeks.map((w) => w.volume));
   const openSets = useMemo(
@@ -78,6 +125,194 @@ export default function HistoryScreen({
       2600,
     );
   };
+
+  /* ---- trophy case ------------------------------------------------------ */
+
+  if (view.kind === "trophies") {
+    return (
+      <div className="screen" key="trophies">
+        <button className="drill-back" onClick={() => go({ kind: "main" })}>
+          {BACK_ICON}
+          <span>History</span>
+        </button>
+        <h1 className="history-title">Trophy case</h1>
+        <p className="screen-sub">
+          Your heaviest set of every exercise, all time. Only real logged
+          sets count — program seeds never make the wall.
+        </p>
+        <div className="card menu-list">
+          {records.map((r, i) => (
+            <div key={r.exercise.toLowerCase()} className="menu-row">
+              <button
+                className="menu-main pr-main"
+                onClick={() => go({ kind: "exercise", name: r.exercise })}
+                aria-label={`${r.exercise} record and trend`}
+              >
+                <span className={`pr-medal${i === 0 ? " gold" : ""}`}>
+                  {TROPHY_ICON}
+                </span>
+                <span className="menu-text">
+                  <span className="menu-name">{r.exercise}</span>
+                  <span className="menu-detail">
+                    {formatSet(r.weight, r.reps)} ·{" "}
+                    {formatShortDay(trackingDayFor(new Date(r.timestamp)))}
+                  </span>
+                </span>
+                <span className="pr-value">
+                  {r.weight !== null ? (
+                    <>
+                      {formatKg(r.weight)}
+                      <span className="u"> kg</span>
+                    </>
+                  ) : (
+                    <>×{r.reps}</>
+                  )}
+                </span>
+                <span className="chevron" aria-hidden="true">
+                  ›
+                </span>
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  /* ---- one exercise: record + trend --------------------------------------- */
+
+  if (view.kind === "exercise") {
+    const record = records.find(
+      (r) => r.exercise.toLowerCase() === view.name.toLowerCase(),
+    );
+    const points = exerciseTrend(view.name, sets, sessions);
+    const weighted = points.filter((p) => p.weight !== null);
+    const series = weighted.length > 0 ? weighted : points;
+    const byReps = weighted.length === 0;
+    const values = series.map((p) => (byReps ? p.reps : (p.weight ?? 0)));
+    const lo = Math.min(...values);
+    const hi = Math.max(...values);
+    const span = hi - lo || 1;
+    const X0 = 10;
+    const X1 = 310;
+    const Y0 = 16;
+    const Y1 = 84;
+    const px = (i: number) =>
+      series.length === 1 ? 160 : X0 + (i / (series.length - 1)) * (X1 - X0);
+    const py = (v: number) => Y1 - ((v - lo) / span) * (Y1 - Y0);
+    const fmt = (v: number) => (byReps ? `×${v}` : formatKg(v));
+    // Label every dot while the chart is sparse; first/peak/last after.
+    const peak = values.indexOf(hi);
+    const labelled =
+      series.length <= 8
+        ? values.map((_, i) => i)
+        : [0, peak, series.length - 1];
+
+    return (
+      <div className="screen" key={`ex-${view.name}`}>
+        <button className="drill-back" onClick={() => go({ kind: "trophies" })}>
+          {BACK_ICON}
+          <span>Trophy case</span>
+        </button>
+        <h1 className="history-title">{view.name}</h1>
+        <div className="card trend-card">
+          <div className="trend-head">
+            <span className="trend-label">
+              {byReps ? "Top reps" : "Top set"} per workout
+            </span>
+          </div>
+          <p className="trend-avg-caption">
+            {byReps ? "bodyweight — reps of the best set" : "kg, best set of the day"}
+          </p>
+          <svg
+            className="trend-chart exline-chart"
+            viewBox="0 0 320 100"
+            role="img"
+            aria-label={`${view.name} best set over time`}
+          >
+            {series.length > 1 && (
+              <polyline
+                className="exline"
+                points={series
+                  .map((_, i) => `${px(i)},${py(values[i])}`)
+                  .join(" ")}
+              />
+            )}
+            {series.map((p, i) => (
+              <g key={p.startedAt}>
+                <circle
+                  className={`exdot${i === series.length - 1 ? " now" : ""}`}
+                  cx={px(i)}
+                  cy={py(values[i])}
+                  r={i === series.length - 1 ? 4 : 3}
+                />
+                {labelled.includes(i) && (
+                  <text
+                    className="axis-label exval"
+                    x={px(i)}
+                    y={py(values[i]) - 8}
+                  >
+                    {fmt(values[i])}
+                  </text>
+                )}
+              </g>
+            ))}
+            <text className="axis-label" x={X0} y={97} textAnchor="start">
+              {formatShortDay(series[0].day)}
+            </text>
+            {series.length > 1 && (
+              <text className="axis-label" x={X1} y={97} textAnchor="end">
+                {formatShortDay(series[series.length - 1].day)}
+              </text>
+            )}
+          </svg>
+          <div className="trend-stats">
+            <div className="tstat">
+              <span className="tstat-v">
+                {record?.weight != null ? (
+                  <>
+                    {formatKg(record.weight)}
+                    <span className="u"> kg</span>
+                  </>
+                ) : (
+                  <>×{record?.reps ?? 0}</>
+                )}
+              </span>
+              <span className="tstat-l">best set</span>
+            </div>
+            <div className="tstat">
+              <span className="tstat-v">{formatNumber(points.length)}</span>
+              <span className="tstat-l">workouts</span>
+            </div>
+            <div className="tstat">
+              <span className="tstat-v">
+                {formatNumber(record?.volume ?? 0)}
+                <span className="u"> kg</span>
+              </span>
+              <span className="tstat-l">lifted</span>
+            </div>
+          </div>
+        </div>
+
+        <h2 className="section-label">Recent</h2>
+        <div className="card menu-list">
+          {[...points].reverse().slice(0, 6).map((p) => (
+            <div key={p.startedAt} className="menu-row">
+              <span className="menu-main pr-recent">
+                <span className="menu-text">
+                  <span className="menu-name">{formatShortDay(p.day)}</span>
+                  <span className="menu-detail">
+                    top set {formatSet(p.weight, p.reps)}
+                    {p.volume > 0 && ` · ${formatNumber(p.volume)} kg`}
+                  </span>
+                </span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="screen">
@@ -154,6 +389,21 @@ export default function HistoryScreen({
           </div>
         </div>
       </div>
+
+      {records.length > 0 && (
+        <button className="card pr-row" onClick={() => go({ kind: "trophies" })}>
+          <span className="pr-medal gold">{TROPHY_ICON}</span>
+          <span className="menu-text">
+            <span className="menu-name">Trophy case</span>
+            <span className="menu-detail">
+              {records.length} personal record{records.length === 1 ? "" : "s"}
+            </span>
+          </span>
+          <span className="chevron" aria-hidden="true">
+            ›
+          </span>
+        </button>
+      )}
 
       <h2 className="section-label">
         All workouts

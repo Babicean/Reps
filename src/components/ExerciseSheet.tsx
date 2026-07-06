@@ -4,6 +4,14 @@ import Sheet from "./Sheet";
 import RestTimer from "./RestTimer";
 import { formatDayLabel, formatKg, formatSet } from "../lib/format";
 import { parseReps, parseWeight } from "../lib/workout";
+import {
+  isBarbell,
+  loadBarbellFlags,
+  plateBreakdown,
+  saveBarbellFlags,
+  toggleBarbell,
+} from "../lib/plates";
+import { haptic } from "../lib/fly";
 
 interface Props {
   open: boolean;
@@ -49,6 +57,10 @@ export default function ExerciseSheet({
   const [weight, setWeight] = useState("");
   const [reps, setReps] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Which exercises are barbell lifts (and so get plate math) is the
+  // user's call, remembered per exercise. Re-read on open so the two
+  // sheet instances never disagree.
+  const [barbellFlags, setBarbellFlags] = useState(loadBarbellFlags);
 
   // Prefill for the set about to be logged: last time's matching set,
   // else today's previous set, else last time's final set.
@@ -57,6 +69,7 @@ export default function ExerciseSheet({
     if (!open) return;
     setName(exercise);
     setError(null);
+    setBarbellFlags(loadBarbellFlags());
     const ghost =
       lastTime?.sets[nextIndex] ??
       (todaySets.length > 0
@@ -83,6 +96,23 @@ export default function ExerciseSheet({
     const next = Math.max(1, current + delta);
     setReps(String(next));
     setError(null);
+  };
+
+  const effectiveName = editableName ? name : exercise;
+  const barbell =
+    effectiveName.trim() !== "" && isBarbell(effectiveName, barbellFlags);
+  const parsedWeight = parseWeight(weight);
+  const plates =
+    barbell && typeof parsedWeight === "number"
+      ? plateBreakdown(parsedWeight)
+      : null;
+
+  const flipBarbell = () => {
+    if (effectiveName.trim() === "") return;
+    const next = toggleBarbell(effectiveName, barbellFlags);
+    setBarbellFlags(next);
+    saveBarbellFlags(next);
+    haptic(6);
   };
 
   const submit = (e: FormEvent) => {
@@ -143,7 +173,25 @@ export default function ExerciseSheet({
           </div>
         )}
         <div className="stepper-row">
-          <span className="stepper-label">Weight</span>
+          <span className="stepper-label">
+            Weight
+            <button
+              type="button"
+              className={`plate-toggle${barbell ? " on" : ""}`}
+              aria-pressed={barbell}
+              aria-label="Barbell lift — show plates per side"
+              onClick={flipBarbell}
+            >
+              <svg width="15" height="15" viewBox="0 0 17 17" fill="none" aria-hidden="true">
+                <path
+                  d="M1.5 8.5h14M3.5 5.5v6M13.5 5.5v6M6 4v9M11 4v9"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          </span>
           <div className="stepper">
             <button
               type="button"
@@ -176,6 +224,13 @@ export default function ExerciseSheet({
             </button>
           </div>
         </div>
+        {barbell && plates !== null && (
+          <p className="plate-line">
+            {plates.length === 0
+              ? "just the bar"
+              : `bar + ${plates.map((p) => formatKg(p)).join(" + ")} a side`}
+          </p>
+        )}
         <div className="stepper-row">
           <span className="stepper-label">Reps</span>
           <div className="stepper">

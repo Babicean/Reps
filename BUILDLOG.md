@@ -77,14 +77,28 @@ scrollbars, safe areas — so those lessons never need relearning.
       Tally blue on the home screen. In-app accent stays Azure.
 - [x] Rest stopwatch tap-to-restart (0.3.1): tapping the pill zeroes
       the count; a new set always retakes the baseline. No buttons.
+- [x] Ghost race (0.4): the live hero quietly compares your volume to
+      the same elapsed minute of your last session of that routine —
+      "240 kg ahead of last Push". Fair from minute one; once the
+      ghost finishes, its total stands.
+- [x] Plate math (0.4): a small barbell toggle on the weight field
+      marks an exercise as a barbell lift (remembered per exercise,
+      the owner's barbell lifts pre-marked); it then shows the exact
+      per-side load — "bar + 25 + 5 + 2.5 a side". Strictly exact:
+      weights standard plates can't build show nothing rather than
+      something wrong. Machines and dumbbells stay plate-free.
+- [x] Trophy case (0.4): History → one quiet row → every exercise's
+      all-time best, gold medal on the heaviest, bodyweight work
+      ranked by reps. Real logged sets only.
 
 ## Parked for later (deliberately)
 
 - **Cardio** and **supersets/dropsets** — v1 is strictly sets of
   lifts.
 - ~~Rest timer~~ — shipped in 0.3 as a zero-config count-up stopwatch.
-- **Per-exercise trend pages** — charts of top-set weight, volume,
-  e1RM over time. The schema is ready for them from day one.
+- ~~Per-exercise trend pages~~ — shipped in 0.4: tap any trophy for a
+  top-set-per-workout line chart, lifetime counters, and recent
+  sessions. (e1RM curves still parked.)
 - **"Work done" → calories burned** — an estimate of energy burned
   from a session. Honest note: physical work (kg × meters) wildly
   underestimates the metabolic cost of lifting, so this needs a

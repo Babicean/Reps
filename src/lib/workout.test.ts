@@ -8,7 +8,11 @@ import {
   lastTimeFor,
   parseReps,
   parseWeight,
+  exerciseTrend,
+  personalRecords,
+  previousSessionOf,
   suggestNextRoutine,
+  volumeAtElapsed,
   volumeOf,
 } from "./workout";
 
@@ -173,5 +177,83 @@ describe("groupByExercise", () => {
     ]);
     expect(groups.map((g) => g.exercise)).toEqual(["Bench", "Flys"]);
     expect(groups[0].sets).toHaveLength(2);
+  });
+});
+
+describe("previousSessionOf", () => {
+  const sessions: Session[] = [
+    session("a", 1000, "r1"),
+    session("b", 2000, "r1"),
+    { ...session("c", 3000, "r1"), endedAt: null }, // live — never a ghost
+    session("live", 4000, "r1"),
+  ];
+  it("finds the latest finished session of the routine", () => {
+    const ghost = previousSessionOf("r1", "Push", sessions, "live");
+    expect(ghost?.id).toBe("b");
+  });
+  it("matches by name when ids are missing", () => {
+    const ghost = previousSessionOf(null, "push ", sessions, "live");
+    expect(ghost?.id).toBe("b");
+  });
+  it("returns null with no history", () => {
+    expect(previousSessionOf("r9", "Arms", sessions, "live")).toBeNull();
+  });
+});
+
+describe("volumeAtElapsed", () => {
+  const sets = [
+    set("1", "g", "Bench", 80, 5, 1000 + 60e3),
+    set("2", "g", "Bench", 80, 5, 1000 + 120e3),
+    set("3", "g", "Bench", 80, 5, 1000 + 300e3),
+  ];
+  it("counts only sets logged by that point in the session", () => {
+    expect(volumeAtElapsed(sets, 1000, 150e3)).toBe(800);
+    expect(volumeAtElapsed(sets, 1000, 10e3)).toBe(0);
+    expect(volumeAtElapsed(sets, 1000, 999e3)).toBe(1200);
+  });
+});
+
+describe("personalRecords", () => {
+  const sets = [
+    set("1", "a", "Bench", 80, 7, 100),
+    set("2", "b", "Bench", 85, 5, 200),
+    set("3", "b", "bench", 85, 7, 300), // case-insensitive, more reps wins
+    set("4", "a", "Dips", null, 10, 100),
+    set("5", "b", "Dips", null, 12, 200),
+    set("6", "a", "Curl", 20, 10, 100),
+  ];
+  it("finds heaviest weight and best reps at that weight", () => {
+    const [bench] = personalRecords(sets);
+    expect(bench.exercise).toBe("Bench");
+    expect(bench.weight).toBe(85);
+    expect(bench.reps).toBe(7);
+    expect(bench.sessions).toBe(2);
+    expect(bench.volume).toBe(80 * 7 + 85 * 5 + 85 * 7);
+  });
+  it("tracks bodyweight work by reps, sorted after weighted", () => {
+    const records = personalRecords(sets);
+    expect(records.map((r) => r.exercise)).toEqual(["Bench", "Curl", "Dips"]);
+    const dips = records[2];
+    expect(dips.weight).toBeNull();
+    expect(dips.reps).toBe(12);
+  });
+});
+
+describe("exerciseTrend", () => {
+  const sessions: Session[] = [session("a", 1000), session("b", 2000)];
+  const sets = [
+    set("1", "a", "Bench", 80, 7, 1100),
+    set("2", "a", "Bench", 82.5, 5, 1200),
+    set("3", "b", "Bench", 85, 5, 2100),
+    set("4", "b", "Squat", 100, 5, 2200),
+  ];
+  it("returns each session's top set, oldest first", () => {
+    const trend = exerciseTrend("bench", sets, sessions);
+    expect(trend.map((p) => p.weight)).toEqual([82.5, 85]);
+    expect(trend[0].volume).toBe(80 * 7 + 82.5 * 5);
+  });
+  it("ignores other exercises and unknown sessions", () => {
+    expect(exerciseTrend("Squat", sets, sessions)).toHaveLength(1);
+    expect(exerciseTrend("Deadlift", sets, sessions)).toHaveLength(0);
   });
 });

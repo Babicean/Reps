@@ -15,6 +15,10 @@ import {
   groupByExercise,
   isPersonalRecord,
   lastTimeFor,
+  previousSessionOf,
+  setsForSession,
+  volumeAtElapsed,
+  volumeOf,
 } from "../lib/workout";
 import AnimatedNumber from "./AnimatedNumber";
 import ExerciseSheet from "./ExerciseSheet";
@@ -91,6 +95,23 @@ export default function WorkoutScreen(props: Props) {
         : null,
     [routines, activeSession],
   );
+
+  // The ghost to race: last time this routine was done. Volume is
+  // compared at the same elapsed point, so the race is fair from
+  // minute one — and once the ghost finishes, its total stands.
+  const ghost = useMemo(() => {
+    if (!activeSession) return null;
+    const prev = previousSessionOf(
+      activeSession.routineId,
+      activeSession.routineName,
+      sessions,
+      activeSession.id,
+    );
+    if (!prev) return null;
+    const ghostSets = setsForSession(sets, prev.id);
+    if (volumeOf(ghostSets) === 0) return null;
+    return { session: prev, sets: ghostSets };
+  }, [activeSession, sessions, sets]);
 
   /** The live checklist: routine slots first, then anything logged ad hoc. */
   const checklist = useMemo(() => {
@@ -337,6 +358,38 @@ export default function WorkoutScreen(props: Props) {
           {activeSets.length} set{activeSets.length === 1 ? "" : "s"} ·{" "}
           {formatDuration(duration)}
         </p>
+        {ghost &&
+          (() => {
+            const pace = volumeAtElapsed(
+              ghost.sets,
+              ghost.session.startedAt,
+              duration,
+            );
+            const delta = Math.round(activeVolume - pace);
+            const ahead = delta >= 0;
+            return (
+              <p className={`hero-ghost${ahead ? " ahead" : ""}`}>
+                {Math.abs(delta) < 1 ? (
+                  <>even with last {ghost.session.routineName}</>
+                ) : (
+                  <>
+                    <svg
+                      width="9"
+                      height="9"
+                      viewBox="0 0 10 10"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d={ahead ? "M5 1.5l4 6.5H1z" : "M5 8.5L1 2h8z"} />
+                    </svg>
+                    {formatNumber(Math.abs(delta))} kg{" "}
+                    {ahead ? "ahead of" : "behind"} last{" "}
+                    {ghost.session.routineName}
+                  </>
+                )}
+              </p>
+            );
+          })()}
         <div className="hero-rest">
           <RestTimer since={restSince} onReset={resetRest} />
         </div>

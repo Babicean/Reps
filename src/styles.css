@@ -2553,3 +2553,141 @@ input {
   flex: none;
   margin-top: 0.125rem;
 }
+
+/* ---- v0.4: plate math, ghost race, trophy case --------------------------- */
+
+/* Barbell toggle beside the Weight label: dim when off, accent when on. */
+.plate-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  margin: -0.5rem 0 -0.5rem 0.0625rem;
+  border-radius: 50%;
+  color: var(--ink-3);
+  opacity: 0.5;
+  vertical-align: middle;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color 140ms ease,
+    opacity 140ms ease;
+}
+
+.plate-toggle.on {
+  color: var(--accent);
+  opacity: 1;
+}
+
+/* Per-side breakdown, tucked under the weight stepper. */
+.plate-line {
+  margin: -0.3125rem 0 0.6875rem;
+  text-align: right;
+  font-size: 0.8125rem;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The ghost race: one quiet line under the live hero stats. */
+.hero-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3125rem;
+  margin-top: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-ghost svg {
+  color: var(--ink-3);
+}
+
+.hero-ghost.ahead svg {
+  color: var(--accent);
+}
+
+/* Trophy case entry row + record rows. */
+.pr-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 0.75rem 0.875rem 1rem;
+  margin-bottom: 1.25rem;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pr-medal {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pr-medal.gold {
+  background: rgba(216, 148, 24, 0.14);
+  color: var(--warn);
+}
+
+.pr-value {
+  flex: none;
+  margin-left: auto;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.pr-value .u {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.pr-main .menu-text {
+  flex: 1;
+}
+
+.pr-recent {
+  cursor: default;
+}
+
+.screen-sub {
+  margin: -0.5rem 0 1.125rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
+/* The per-exercise trend line. */
+.exline-chart {
+  overflow: visible;
+}
+
+.exline {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.exdot {
+  fill: var(--card);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.exdot.now {
+  fill: var(--accent);
+}
+
+.exval {
+  font-weight: 600;
+}

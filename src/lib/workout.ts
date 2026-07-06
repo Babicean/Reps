@@ -1,4 +1,5 @@
 import type {
+  DayKey,
   LastTime,
   Routine,
   RoutineExercise,
@@ -291,6 +292,140 @@ export function groupByExercise(
     else groups.push({ exercise: s.exercise, sets: [s] });
   }
   return groups;
+}
+
+/* ---- records & trends ---------------------------------------------------- */
+
+/**
+ * The most recent finished session of the same routine — the ghost to
+ * race. Matches by routine id when there is one, else by name, so the
+ * comparison survives routine edits.
+ */
+export function previousSessionOf(
+  routineId: string | null,
+  routineName: string,
+  sessions: Session[],
+  excludeSessionId: string,
+): Session | null {
+  let best: Session | null = null;
+  for (const s of sessions) {
+    if (s.id === excludeSessionId || s.endedAt === null) continue;
+    const match =
+      routineId !== null && s.routineId !== null
+        ? s.routineId === routineId
+        : sameExercise(s.routineName, routineName);
+    if (!match) continue;
+    if (!best || s.startedAt > best.startedAt) best = s;
+  }
+  return best;
+}
+
+/** Volume a session had accumulated this far into its own clock. */
+export function volumeAtElapsed(
+  sets: SetEntry[],
+  startedAt: number,
+  elapsedMs: number,
+): number {
+  return volumeOf(sets.filter((s) => s.timestamp - startedAt <= elapsedMs));
+}
+
+/** One exercise's all-time best, plus its lifetime counters. */
+export interface PersonalRecord {
+  exercise: string;
+  /** Heaviest weight ever logged, or null for bodyweight-only work. */
+  weight: number | null;
+  /** Best reps at that weight (best reps ever, when bodyweight). */
+  reps: number;
+  /** When the record performance first happened. */
+  timestamp: number;
+  /** Distinct sessions this exercise appeared in. */
+  sessions: number;
+  /** All-time kg moved on this exercise. */
+  volume: number;
+}
+
+/** Prefer heavier, then more reps, then the FIRST time it was done. */
+function betterRecordSet(a: SetEntry, b: SetEntry): SetEntry {
+  const aw = a.weight ?? -1;
+  const bw = b.weight ?? -1;
+  if (bw !== aw) return bw > aw ? b : a;
+  if (b.reps !== a.reps) return b.reps > a.reps ? b : a;
+  return b.timestamp < a.timestamp ? b : a;
+}
+
+/**
+ * Every exercise's personal record, heaviest first (bodyweight work
+ * sorts after weighted, by reps). Real logged sets only — routine
+ * seeds never appear here.
+ */
+export function personalRecords(sets: SetEntry[]): PersonalRecord[] {
+  const groups = new Map<string, { name: string; sets: SetEntry[] }>();
+  for (const s of sets) {
+    const key = s.exercise.trim().toLowerCase();
+    const group = groups.get(key);
+    if (group) group.sets.push(s);
+    else groups.set(key, { name: s.exercise.trim(), sets: [s] });
+  }
+  const records: PersonalRecord[] = [];
+  for (const { name, sets: own } of groups.values()) {
+    const best = own.reduce(betterRecordSet);
+    records.push({
+      exercise: name,
+      weight: best.weight,
+      reps: best.reps,
+      timestamp: best.timestamp,
+      sessions: new Set(own.map((s) => s.sessionId)).size,
+      volume: volumeOf(own),
+    });
+  }
+  return records.sort((a, b) => {
+    if (a.weight !== null || b.weight !== null) {
+      return (b.weight ?? -1) - (a.weight ?? -1);
+    }
+    return b.reps - a.reps;
+  });
+}
+
+/** One session's showing for an exercise, for the trend chart. */
+export interface TrendPoint {
+  day: DayKey;
+  startedAt: number;
+  /** The session's heaviest set (kg), or null when all bodyweight. */
+  weight: number | null;
+  /** Reps at that heaviest set (best reps, when bodyweight). */
+  reps: number;
+  /** The exercise's volume within that session. */
+  volume: number;
+}
+
+/** An exercise's top set per session, oldest first. */
+export function exerciseTrend(
+  exercise: string,
+  sets: SetEntry[],
+  sessions: Session[],
+): TrendPoint[] {
+  const byId = new Map(sessions.map((s) => [s.id, s]));
+  const groups = new Map<string, SetEntry[]>();
+  for (const s of sets) {
+    if (!sameExercise(s.exercise, exercise)) continue;
+    const group = groups.get(s.sessionId);
+    if (group) group.push(s);
+    else groups.set(s.sessionId, [s]);
+  }
+  const points: TrendPoint[] = [];
+  for (const [sessionId, group] of groups) {
+    const session = byId.get(sessionId);
+    if (!session) continue;
+    const top = group.reduce(betterRecordSet);
+    points.push({
+      day: session.day,
+      startedAt: session.startedAt,
+      weight: top.weight,
+      reps: top.reps,
+      volume: volumeOf(group),
+    });
+  }
+  return points.sort((a, b) => a.startedAt - b.startedAt);
 }
 
 /* ---- the owner's program ------------------------------------------------ */
