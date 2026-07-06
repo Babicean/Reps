@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import type { LastTime, SetEntry } from "../types";
 import Sheet from "./Sheet";
+import RestTimer from "./RestTimer";
 import { formatDayLabel, formatKg, formatSet } from "../lib/format";
 import { parseReps, parseWeight } from "../lib/workout";
 
@@ -11,6 +12,8 @@ interface Props {
   editableName: boolean;
   lastTime: LastTime | null;
   todaySets: SetEntry[];
+  /** Timestamp of the session's last logged set, for the rest stopwatch. */
+  restSince: number | null;
   onLog: (
     exercise: string,
     weight: number | null,
@@ -34,6 +37,7 @@ export default function ExerciseSheet({
   editableName,
   lastTime,
   todaySets,
+  restSince,
   onLog,
   onDeleteSet,
   onClose,
@@ -107,16 +111,19 @@ export default function ExerciseSheet({
       title={editableName ? "Another exercise" : exercise}
       onClose={onClose}
     >
-      {lastTime && lastTime.sets.length > 0 && (
-        <p className="last-line">
-          {lastTime.fromSeed
-            ? "Your program: "
-            : `Last time (${formatDayLabel(lastTime.day).toLowerCase()}): `}
-          <strong>
-            {lastTime.sets.map((s) => formatSet(s.weight, s.reps)).join(", ")}
-          </strong>
-        </p>
-      )}
+      <div className="sheet-meta">
+        {lastTime && lastTime.sets.length > 0 && (
+          <p className="last-line">
+            {lastTime.fromSeed
+              ? "Your program: "
+              : `Last time (${formatDayLabel(lastTime.day).toLowerCase()}): `}
+            <strong>
+              {lastTime.sets.map((s) => formatSet(s.weight, s.reps)).join(", ")}
+            </strong>
+          </p>
+        )}
+        <RestTimer since={restSince} />
+      </div>
       <form onSubmit={submit} noValidate>
         {editableName && (
           <div className="field sheet-name">

@@ -78,9 +78,15 @@ scrollbars, safe areas — so those lessons never need relearning.
 
 - **Cardio** and **supersets/dropsets** — v1 is strictly sets of
   lifts.
-- **Rest timer** — classic, useful, not core.
+- ~~Rest timer~~ — shipped in 0.3 as a zero-config count-up stopwatch.
 - **Per-exercise trend pages** — charts of top-set weight, volume,
   e1RM over time. The schema is ready for them from day one.
+- **"Work done" → calories burned** — an estimate of energy burned
+  from a session. Honest note: physical work (kg × meters) wildly
+  underestimates the metabolic cost of lifting, so this needs a
+  MET/volume-based heuristic clearly labelled as an estimate, not
+  physics theater. Owner-requested; revisit after some real data
+  accumulates.
 - **Notion history import** — parse the owner's text log into
   backdated sessions so graphs start with months of data.
 - **Multiple routine templates / sharing** — different splits for

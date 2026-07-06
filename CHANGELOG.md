@@ -8,6 +8,21 @@ When cutting a new version: bump `package.json` and
 `android/app/build.gradle` (`versionCode` always +1), add a section
 here.
 
+## 0.3 — code 4 — 2026-07-06
+
+First feedback from a real workout:
+
+- **Reps gets its own icon**: a white barbell on azure, everywhere —
+  launcher (adaptive + legacy + round), PWA, and Apple touch icon. No
+  more Tally marks on the gym app.
+- **Rest stopwatch.** Log a set and a small "rest 0:47" pill starts
+  counting up — in the live hero and inside the set logger. No
+  configuration, no alarms; it resets with every set and bows out
+  after 30 minutes. Lightweight on purpose.
+- Parked with a note: a "work done" metric converting training volume
+  into estimated calories burned — needs an honest model, not just
+  physics theater (see BUILDLOG).
+
 ## 0.2.1 — code 3 — 2026-07-05
 
 - **All-time counters** at the bottom of the History chart card:

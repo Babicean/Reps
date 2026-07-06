@@ -18,6 +18,7 @@ import {
 } from "../lib/workout";
 import AnimatedNumber from "./AnimatedNumber";
 import ExerciseSheet from "./ExerciseSheet";
+import RestTimer from "./RestTimer";
 import Toast from "./Toast";
 
 interface Props {
@@ -308,6 +309,10 @@ export default function WorkoutScreen(props: Props) {
 
   const duration = Date.now() - activeSession.startedAt;
   const openItem = checklist.find((i) => i.name === openExercise) ?? null;
+  const lastSetAt =
+    activeSets.length > 0
+      ? Math.max(...activeSets.map((s) => s.timestamp))
+      : null;
 
   return (
     <div className="screen">
@@ -324,6 +329,9 @@ export default function WorkoutScreen(props: Props) {
           {activeSets.length} set{activeSets.length === 1 ? "" : "s"} ·{" "}
           {formatDuration(duration)}
         </p>
+        <div className="hero-rest">
+          <RestTimer since={lastSetAt} />
+        </div>
       </div>
 
       <div className="card menu-list">
@@ -425,6 +433,7 @@ export default function WorkoutScreen(props: Props) {
             : null
         }
         todaySets={openItem?.logged ?? []}
+        restSince={lastSetAt}
         onLog={handleLog}
         onDeleteSet={handleDeleteSet}
         onClose={() => setOpenExercise(null)}
@@ -435,6 +444,7 @@ export default function WorkoutScreen(props: Props) {
         editableName={true}
         lastTime={null}
         todaySets={[]}
+        restSince={lastSetAt}
         onLog={(name, weight, reps, el) => {
           handleLog(name, weight, reps, el);
           setCustomOpen(false);
