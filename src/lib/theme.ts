@@ -2,7 +2,7 @@ import { Capacitor } from "@capacitor/core";
 import { loadSettings } from "./settings";
 
 export type ThemePref = "system" | "light" | "dark";
-export type AccentPref = "azure" | "emerald";
+export type AccentPref = "azure" | "emerald" | "ember";
 
 /** Stamp the accent family on <html>; CSS tokens key off it. */
 export function applyAccent(accent: AccentPref): void {

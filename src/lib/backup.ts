@@ -80,7 +80,8 @@ export function parseBackup(raw: string): BackupPayload | null {
             ? Math.round(weeklyTarget)
             : null,
         theme: theme === "light" || theme === "dark" ? theme : "system",
-        accent: accent === "emerald" ? "emerald" : "azure",
+        accent:
+          accent === "emerald" || accent === "ember" ? accent : "azure",
       },
     };
   } catch {

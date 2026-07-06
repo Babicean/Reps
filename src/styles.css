@@ -116,6 +116,35 @@
   --focus-ring: rgba(39, 164, 104, 0.45);
 }
 
+/* ---- Ember accent (Settings → Accent) ------------------------------------
+   The launcher icon's red, inside the app. Same rules as emerald: only
+   the accent family moves, and dark needs the doubled selectors. */
+
+:root[data-accent="ember"] {
+  --accent: #d63a30;
+  --accent-strong: #dd4137;
+  --accent-soft: rgba(214, 58, 48, 0.1);
+  --focus-ring: rgba(214, 58, 48, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-accent="ember"]:not([data-theme="light"]) {
+    --accent: #e25549;
+    --accent-strong: #e25549;
+    --accent-ink: #1c0806;
+    --accent-soft: rgba(226, 85, 73, 0.16);
+    --focus-ring: rgba(226, 85, 73, 0.45);
+  }
+}
+
+:root[data-theme="dark"][data-accent="ember"] {
+  --accent: #e25549;
+  --accent-strong: #e25549;
+  --accent-ink: #1c0806;
+  --accent-soft: rgba(226, 85, 73, 0.16);
+  --focus-ring: rgba(226, 85, 73, 0.45);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -968,7 +997,7 @@ input {
 
 .accent-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.25rem;
   margin-top: 0.625rem;
   padding: 0.25rem;
@@ -1014,6 +1043,10 @@ input {
   background: #149e60;
 }
 
+.accent-dot.ember {
+  background: #d63a30;
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .accent-dot.azure {
     background: #5d8dff;
@@ -1021,6 +1054,10 @@ input {
 
   :root:not([data-theme="light"]) .accent-dot.emerald {
     background: #27a468;
+  }
+
+  :root:not([data-theme="light"]) .accent-dot.ember {
+    background: #e25549;
   }
 }
 
@@ -1030,6 +1067,10 @@ input {
 
 :root[data-theme="dark"] .accent-dot.emerald {
   background: #27a468;
+}
+
+:root[data-theme="dark"] .accent-dot.ember {
+  background: #e25549;
 }
 
 /* ---- Settings drill-in (Account) ---------------------------------------- */
@@ -2615,6 +2656,7 @@ input {
   gap: 0.75rem;
   width: 100%;
   padding: 0.875rem 0.75rem 0.875rem 1rem;
+  margin-top: 0.875rem;
   margin-bottom: 1.25rem;
   text-align: left;
   -webkit-tap-highlight-color: transparent;

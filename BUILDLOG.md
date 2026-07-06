@@ -109,8 +109,9 @@ scrollbars, safe areas — so those lessons never need relearning.
   backdated sessions so graphs start with months of data.
 - **Multiple routine templates / sharing** — different splits for
   different people; v1 is one person's split.
-- **"Ember" accent** — an optional gym-coded warm theme alongside
-  Azure/Emerald (owner dislikes red; ember ≠ red).
+- ~~"Ember" accent~~ — shipped in 0.4.1 as a third accent alongside
+  Azure/Emerald, matching the red launcher icon. The trophy-case gold
+  stays gold.
 - **lb/kg toggle** — owner lifts in kg.
 - **Sync server** — shared milestone with Tally; the account beta
   rides along in the fork.

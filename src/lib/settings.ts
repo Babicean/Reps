@@ -16,7 +16,7 @@ export interface Settings {
   /** Appearance override; "system" follows the OS. */
   theme: "system" | "light" | "dark";
   /** Accent color family. */
-  accent: "azure" | "emerald";
+  accent: "azure" | "emerald" | "ember";
 }
 
 const DEFAULTS: Settings = {
@@ -45,7 +45,8 @@ export function loadSettings(): Settings {
     return {
       weeklyTarget: asTarget(s.weeklyTarget),
       theme: s.theme === "light" || s.theme === "dark" ? s.theme : "system",
-      accent: s.accent === "emerald" ? "emerald" : "azure",
+      accent:
+        s.accent === "emerald" || s.accent === "ember" ? s.accent : "azure",
     };
   } catch {
     return { ...DEFAULTS };
