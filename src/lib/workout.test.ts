@@ -11,6 +11,7 @@ import {
   exerciseTrend,
   personalRecords,
   previousSessionOf,
+  reconcileSessions,
   suggestNextRoutine,
   volumeAtElapsed,
   volumeOf,
@@ -255,5 +256,43 @@ describe("exerciseTrend", () => {
   it("ignores other exercises and unknown sessions", () => {
     expect(exerciseTrend("Squat", sets, sessions)).toHaveLength(1);
     expect(exerciseTrend("Deadlift", sets, sessions)).toHaveLength(0);
+  });
+});
+
+describe("reconcileSessions", () => {
+  const FOUR_H = 4 * 3600e3;
+  const start = Date.now() - 2 * 86400e3; // two days ago
+  const mkSet = (sid: string, t: number): SetEntry =>
+    set(`s-${t}`, sid, "Bench", 80, 5, t);
+
+  it("closes a forgotten session at its last set plus grace", () => {
+    const sessions: Session[] = [{ ...session("a", start), endedAt: null }];
+    const sets = [mkSet("a", start + 10e3), mkSet("a", start + 40 * 60e3)];
+    const [fixed] = reconcileSessions(sessions, sets);
+    expect(fixed.endedAt).toBe(start + 40 * 60e3 + 10 * 60e3); // 50 min
+  });
+
+  it("repairs the old exact-4h auto-close stamp", () => {
+    const sessions: Session[] = [
+      { ...session("a", start), endedAt: start + FOUR_H },
+    ];
+    const sets = [mkSet("a", start + 35 * 60e3)];
+    const [fixed] = reconcileSessions(sessions, sets);
+    expect(fixed.endedAt).toBe(start + 45 * 60e3);
+  });
+
+  it("leaves honest sessions and the live one alone", () => {
+    const sessions: Session[] = [
+      { ...session("a", start), endedAt: start + 41 * 60e3 },
+      { ...session("live", Date.now() - 30 * 60e3), endedAt: null },
+    ];
+    const result = reconcileSessions(sessions, [mkSet("a", start + 35 * 60e3)]);
+    expect(result).toBe(sessions); // same reference — nothing changed
+  });
+
+  it("keeps the 4h guess when a stale session has no sets", () => {
+    const sessions: Session[] = [{ ...session("a", start), endedAt: null }];
+    const [fixed] = reconcileSessions(sessions, []);
+    expect(fixed.endedAt).toBe(start + FOUR_H);
   });
 });

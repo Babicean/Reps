@@ -90,6 +90,10 @@ scrollbars, safe areas — so those lessons never need relearning.
 - [x] Trophy case (0.4): History → one quiet row → every exercise's
       all-time best, gold medal on the heaviest, bodyweight work
       ranked by reps. Real logged sets only.
+- [x] Honest durations (0.4.3): forgotten sessions now auto-close at
+      their last set + 10 min instead of a flat "start + 4 hours";
+      old exact-4h stamps are detected and repaired on load; and the
+      past-session sheet gains a Duration field for manual fixes.
 - [x] "Graphite" dark mode (0.4.2): dark surfaces now separate by
       color, not invisible shadows — darker page, brighter cards, a
       1px light catch on top edges, brighter secondary inks. Chosen

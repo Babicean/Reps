@@ -86,6 +86,7 @@ export default function App() {
     finishSession,
     discardSession,
     deleteSession,
+    updateSessionDuration,
     logSet,
     deleteSet,
     restoreSet,
@@ -167,6 +168,7 @@ export default function App() {
           settings={settings}
           onImport={importBackup}
           onDeleteSession={deleteSession}
+          onUpdateDuration={updateSessionDuration}
         />
       )}
 

@@ -2733,3 +2733,21 @@ input {
 .exval {
   font-weight: 600;
 }
+
+/* Duration fix-it row in the past-session sheet. */
+.dur-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.25rem 0 1rem;
+}
+
+.dur-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.dur-field {
+  width: 8.5rem;
+}

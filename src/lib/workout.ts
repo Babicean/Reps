@@ -20,8 +20,11 @@ const ROUTINES_KEY = "reps.routines";
 const STORE_VERSION = 1;
 
 /** A live session left open this long is assumed finished (phone died,
- *  forgot to tap Finish). Applied on load. */
+ *  forgot to tap Finish). Applied on load, via reconcileSessions. */
 const AUTO_CLOSE_MS = 4 * 60 * 60 * 1000;
+
+/** Grace added after the last set when we close a session for the user. */
+const AUTO_CLOSE_GRACE_MS = 10 * 60 * 1000;
 
 export function makeId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
@@ -52,24 +55,13 @@ function saveList<T>(key: string, field: string, list: T[]): void {
 }
 
 export function loadSessions(): Session[] {
-  const sessions = loadList<Session>(SESSIONS_KEY, "sessions").filter(
+  return loadList<Session>(SESSIONS_KEY, "sessions").filter(
     (s) =>
       s &&
       typeof s.id === "string" &&
       typeof s.startedAt === "number" &&
       typeof s.day === "string",
   );
-  // Auto-close anything left running unreasonably long.
-  const now = Date.now();
-  let changed = false;
-  for (const s of sessions) {
-    if (s.endedAt === null && now - s.startedAt > AUTO_CLOSE_MS) {
-      s.endedAt = s.startedAt + AUTO_CLOSE_MS;
-      changed = true;
-    }
-  }
-  if (changed) saveSessions(sessions);
-  return sessions;
 }
 
 export function saveSessions(sessions: Session[]): void {
@@ -292,6 +284,42 @@ export function groupByExercise(
     else groups.push({ exercise: s.exercise, sets: [s] });
   }
   return groups;
+}
+
+/**
+ * Close sessions the user forgot to finish, and repair ones the old
+ * auto-close mangled. The honest end time is the last set plus a short
+ * grace — not "start + 4 hours". Sessions whose duration is *exactly*
+ * the old 4-hour stamp carry its fingerprint (millisecond-exact real
+ * workouts don't happen) and get recomputed the same way. Returns the
+ * input array untouched when nothing changed.
+ */
+export function reconcileSessions(
+  sessions: Session[],
+  sets: SetEntry[],
+): Session[] {
+  const now = Date.now();
+  let changed = false;
+  const result = sessions.map((session) => {
+    const stale =
+      session.endedAt === null && now - session.startedAt > AUTO_CLOSE_MS;
+    const mangled =
+      session.endedAt !== null &&
+      session.endedAt - session.startedAt === AUTO_CLOSE_MS;
+    if (!stale && !mangled) return session;
+    const lastSet = sets.reduce(
+      (max, s) => (s.sessionId === session.id ? Math.max(max, s.timestamp) : max),
+      0,
+    );
+    const endedAt =
+      lastSet > session.startedAt
+        ? lastSet + AUTO_CLOSE_GRACE_MS
+        : session.startedAt + AUTO_CLOSE_MS; // no sets — keep the old guess
+    if (endedAt === session.endedAt) return session;
+    changed = true;
+    return { ...session, endedAt };
+  });
+  return changed ? result : sessions;
 }
 
 /* ---- records & trends ---------------------------------------------------- */

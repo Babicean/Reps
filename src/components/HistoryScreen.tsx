@@ -33,6 +33,7 @@ interface Props {
   settings: Settings;
   onImport: (backup: BackupPayload) => MergeResult;
   onDeleteSession: (id: string) => void;
+  onUpdateDuration: (id: string, minutes: number) => void;
 }
 
 /** Where in History we are: the list, the trophy case, or one exercise. */
@@ -79,9 +80,11 @@ export default function HistoryScreen({
   settings,
   onImport,
   onDeleteSession,
+  onUpdateDuration,
 }: Props) {
   const { toast, showToast } = useToast();
   const [openSession, setOpenSession] = useState<Session | null>(null);
+  const [durMin, setDurMin] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [view, setView] = useState<View>({ kind: "main" });
   const fileRef = useRef<HTMLInputElement>(null);
@@ -94,10 +97,28 @@ export default function HistoryScreen({
   const records = useMemo(() => personalRecords(sets), [sets]);
 
   const maxVolume = Math.max(1, ...weeks.map((w) => w.volume));
+  // Look the open session up fresh so edits show without reopening.
+  const shown = openSession
+    ? (sessions.find((x) => x.id === openSession.id) ?? openSession)
+    : null;
   const openSets = useMemo(
     () => (openSession ? setsForSession(sets, openSession.id) : []),
     [sets, openSession],
   );
+
+  const commitDuration = () => {
+    if (!shown || shown.endedAt === null) return;
+    const current = Math.max(1, Math.round((shown.endedAt - shown.startedAt) / 60_000));
+    const value = Number(durMin.trim());
+    if (!Number.isInteger(value) || value < 1 || value > 24 * 60) {
+      setDurMin(String(current)); // revert quietly
+      return;
+    }
+    if (value !== current) {
+      onUpdateDuration(shown.id, value);
+      showToast({ kind: "confirm", message: "Duration updated" }, 2000);
+    }
+  };
 
   const exportBackup = async () => {
     const json = buildBackup(sessions, sets, routines, settings);
@@ -429,6 +450,18 @@ export default function HistoryScreen({
                   onClick={() => {
                     setOpenSession(session);
                     setConfirmDelete(false);
+                    if (session.endedAt !== null) {
+                      setDurMin(
+                        String(
+                          Math.max(
+                            1,
+                            Math.round(
+                              (session.endedAt - session.startedAt) / 60_000,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
                   }}
                   aria-label={`View ${session.routineName} on ${session.day}`}
                 >
@@ -487,14 +520,32 @@ export default function HistoryScreen({
         title={openSession?.routineName ?? ""}
         onClose={() => setOpenSession(null)}
       >
-        {openSession && (
+        {shown && (
           <>
             <p className="sheet-sub">
-              {formatShortDay(openSession.day)} · {openSets.length} sets ·{" "}
+              {formatShortDay(shown.day)} · {openSets.length} sets ·{" "}
               {formatNumber(volumeOf(openSets))} kg
-              {openSession.endedAt !== null &&
-                ` · ${formatDuration(openSession.endedAt - openSession.startedAt)}`}
+              {shown.endedAt !== null &&
+                ` · ${formatDuration(shown.endedAt - shown.startedAt)}`}
             </p>
+            {shown.endedAt !== null && (
+              <div className="dur-row">
+                <span className="dur-label">Duration</span>
+                <div className="field field-cal dur-field">
+                  <input
+                    value={durMin}
+                    onChange={(e) => setDurMin(e.target.value)}
+                    onBlur={commitDuration}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") (e.target as HTMLElement).blur();
+                    }}
+                    inputMode="numeric"
+                    aria-label="Workout duration in minutes"
+                  />
+                  <span className="unit">min</span>
+                </div>
+              </div>
+            )}
             <div className="session-groups">
               {groupByExercise(openSets).map((group) => (
                 <div key={group.exercise} className="session-group">
@@ -516,7 +567,7 @@ export default function HistoryScreen({
                     setConfirmDelete(true);
                     return;
                   }
-                  onDeleteSession(openSession.id);
+                  onDeleteSession(shown.id);
                   setOpenSession(null);
                 }}
               >

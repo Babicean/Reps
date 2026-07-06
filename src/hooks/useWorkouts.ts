@@ -6,6 +6,7 @@ import {
   loadRoutines,
   loadSessions,
   loadSets,
+  reconcileSessions,
   saveRoutines,
   saveSessions,
   saveSets,
@@ -28,7 +29,11 @@ import { applyAccent, applyTheme, type AccentPref, type ThemePref } from "../lib
  * Persists on every change; mirrors Tally's useEntries shape.
  */
 export function useWorkouts() {
-  const [sessions, setSessions] = useState<Session[]>(() => loadSessions());
+  // Reconcile on load: forgotten sessions close at their last set (+10
+  // min grace), and old exact-4h auto-closes get repaired the same way.
+  const [sessions, setSessions] = useState<Session[]>(() =>
+    reconcileSessions(loadSessions(), loadSets()),
+  );
   const [sets, setSets] = useState<SetEntry[]>(() => loadSets());
   const [routines, setRoutines] = useState<Routine[]>(() => loadRoutines());
   const [settings, setSettings] = useState<Settings>(() => loadSettings());
@@ -99,6 +104,17 @@ export function useWorkouts() {
   const finishSession = useCallback((id: string) => {
     setSessions((prev) =>
       prev.map((s) => (s.id === id ? { ...s, endedAt: Date.now() } : s)),
+    );
+  }, []);
+
+  /** Rewrite a finished session's duration — History's fix-it tool. */
+  const updateSessionDuration = useCallback((id: string, minutes: number) => {
+    setSessions((prev) =>
+      prev.map((s) =>
+        s.id === id && s.endedAt !== null
+          ? { ...s, endedAt: s.startedAt + minutes * 60_000 }
+          : s,
+      ),
     );
   }, []);
 
@@ -213,6 +229,7 @@ export function useWorkouts() {
     weeks,
     startSession,
     finishSession,
+    updateSessionDuration,
     discardSession,
     deleteSession,
     logSet,
