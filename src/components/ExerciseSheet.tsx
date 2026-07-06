@@ -14,6 +14,8 @@ interface Props {
   todaySets: SetEntry[];
   /** Timestamp of the session's last logged set, for the rest stopwatch. */
   restSince: number | null;
+  /** Restarts the rest stopwatch from zero. */
+  onRestReset: () => void;
   onLog: (
     exercise: string,
     weight: number | null,
@@ -38,6 +40,7 @@ export default function ExerciseSheet({
   lastTime,
   todaySets,
   restSince,
+  onRestReset,
   onLog,
   onDeleteSet,
   onClose,
@@ -122,7 +125,7 @@ export default function ExerciseSheet({
             </strong>
           </p>
         )}
-        <RestTimer since={restSince} />
+        <RestTimer since={restSince} onReset={onRestReset} />
       </div>
       <form onSubmit={submit} noValidate>
         {editableName && (

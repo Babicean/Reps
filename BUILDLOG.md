@@ -73,6 +73,10 @@ scrollbars, safe areas — so those lessons never need relearning.
 - [x] Weekly session target + streak, in Settings.
 - [x] Backup/restore of everything; settings (theme, accent, account
       beta) carried over from Tally.
+- [x] Own identity: red launcher icon (0.3.1) — Reps no longer wears
+      Tally blue on the home screen. In-app accent stays Azure.
+- [x] Rest stopwatch tap-to-restart (0.3.1): tapping the pill zeroes
+      the count; a new set always retakes the baseline. No buttons.
 
 ## Parked for later (deliberately)
 

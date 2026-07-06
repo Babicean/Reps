@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
+import { haptic } from "../lib/fly";
 
 interface Props {
-  /** Timestamp of the last logged set, or null when none yet. */
+  /** Timestamp the rest started (last set, or a manual restart). */
   since: number | null;
+  /** Tap handler: the parent moves the baseline to "now". */
+  onReset: () => void;
 }
 
 /**
  * The rest stopwatch: counts up from the last logged set, no
  * configuration, no alarms. Restarts itself every time a set lands;
  * disappears when there's nothing to rest from (or the "rest" has
- * clearly become lunch).
+ * clearly become lunch). Tapping it restarts the count from zero —
+ * that's the whole control surface.
  */
-export default function RestTimer({ since }: Props) {
+export default function RestTimer({ since, onReset }: Props) {
   const [, setTick] = useState(0);
   useEffect(() => {
     if (since === null) return;
@@ -26,7 +30,16 @@ export default function RestTimer({ since }: Props) {
   const s = String(seconds % 60).padStart(2, "0");
 
   return (
-    <span className="rest-pill" role="timer" aria-label="Rest time">
+    <button
+      type="button"
+      className="rest-pill"
+      role="timer"
+      aria-label="Rest time — tap to restart"
+      onClick={() => {
+        onReset();
+        haptic(8);
+      }}
+    >
       <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
         <circle cx="7" cy="8" r="5" stroke="currentColor" strokeWidth="1.6" />
         <path
@@ -37,6 +50,6 @@ export default function RestTimer({ since }: Props) {
         />
       </svg>
       rest {m}:{s}
-    </span>
+    </button>
   );
 }

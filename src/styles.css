@@ -2531,6 +2531,12 @@ input {
   font-size: 0.8125rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 140ms ease;
+}
+
+.rest-pill:active {
+  transform: scale(0.94);
 }
 
 .sheet-meta {

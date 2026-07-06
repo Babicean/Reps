@@ -68,6 +68,9 @@ export default function WorkoutScreen(props: Props) {
   const [openExercise, setOpenExercise] = useState<string | null>(null);
   const [customOpen, setCustomOpen] = useState(false);
   const [confirmFinish, setConfirmFinish] = useState(false);
+  // Tapping the rest pill moves the rest baseline to "now"; the next
+  // logged set (a newer timestamp) naturally takes over again.
+  const [restResetAt, setRestResetAt] = useState<number | null>(null);
 
   // Tick the session duration display once a minute while live.
   const [, setTick] = useState(0);
@@ -313,6 +316,11 @@ export default function WorkoutScreen(props: Props) {
     activeSets.length > 0
       ? Math.max(...activeSets.map((s) => s.timestamp))
       : null;
+  const restSince =
+    restResetAt !== null && lastSetAt !== null && restResetAt > lastSetAt
+      ? restResetAt
+      : lastSetAt;
+  const resetRest = () => setRestResetAt(Date.now());
 
   return (
     <div className="screen">
@@ -330,7 +338,7 @@ export default function WorkoutScreen(props: Props) {
           {formatDuration(duration)}
         </p>
         <div className="hero-rest">
-          <RestTimer since={lastSetAt} />
+          <RestTimer since={restSince} onReset={resetRest} />
         </div>
       </div>
 
@@ -433,7 +441,8 @@ export default function WorkoutScreen(props: Props) {
             : null
         }
         todaySets={openItem?.logged ?? []}
-        restSince={lastSetAt}
+        restSince={restSince}
+        onRestReset={resetRest}
         onLog={handleLog}
         onDeleteSet={handleDeleteSet}
         onClose={() => setOpenExercise(null)}
@@ -444,7 +453,8 @@ export default function WorkoutScreen(props: Props) {
         editableName={true}
         lastTime={null}
         todaySets={[]}
-        restSince={lastSetAt}
+        restSince={restSince}
+        onRestReset={resetRest}
         onLog={(name, weight, reps, el) => {
           handleLog(name, weight, reps, el);
           setCustomOpen(false);
