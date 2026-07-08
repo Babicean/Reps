@@ -153,11 +153,13 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  /* Fluid base unit: the whole rem-based UI scales gently with viewport
-     width, so a 360px-wide phone shows the same proportions as a 412px
-     flagship instead of a zoomed-in crop. 4.27vw = 16px at 375px wide;
-     capped at 16px so large phones and desktop are unchanged. */
-  font-size: clamp(14.5px, 4.27vw, 16px);
+  /* Fluid base unit: the whole rem-based UI is ONE proportional design,
+     anchored at 16px on a 412px-wide flagship (the reference device).
+     Every phone renders the same layout at width/412 scale — identical
+     ratios, spacing, and typography, just linearly sized. 3.8835vw =
+     16px at 412px. The floor keeps tiny phones readable; the ceiling
+     (16px at 430px-wide Pro-Max) stops tablets/desktop ballooning. */
+  font-size: clamp(13.5px, 3.8835vw, 16.7px);
   /* No scrollbars anywhere; the overscroll stretch is the scroll signal.
      The Android WebView scrollbar is disabled natively in MainActivity. */
   scrollbar-width: none;

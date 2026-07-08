@@ -90,6 +90,10 @@ scrollbars, safe areas — so those lessons never need relearning.
 - [x] Trophy case (0.4): History → one quiet row → every exercise's
       all-time best, gold medal on the heaviest, bodyweight work
       ranked by reps. Real logged sets only.
+- [x] True proportional scaling (0.4.4): the fluid root now slides
+      across the whole phone range (anchored 16px @ 412px wide,
+      clamp(13.5px, 3.8835vw, 16.7px)) instead of capping at 16px —
+      identical ratios on every screen, matching Tally 2.5.1.
 - [x] Honest durations (0.4.3): forgotten sessions now auto-close at
       their last set + 10 min instead of a flat "start + 4 hours";
       old exact-4h stamps are detected and repaired on load; and the
